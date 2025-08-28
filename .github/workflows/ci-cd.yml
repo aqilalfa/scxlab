@@ -21,6 +21,10 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
       
+      # Langkah baru: Berikan izin eksekusi ke PHPUnit
+      - name: Grant execute permission to phpunit
+        run: chmod +x ./vendor/bin/phpunit
+      
       # Menjalankan tes dan membuat laporan coverage
       - name: Run tests and generate coverage report
         run: ./vendor/bin/phpunit --coverage-clover clover.xml
