@@ -10,22 +10,25 @@ jobs:
   # Tahap style-check telah dihapus
 
   # 1. Static Analysis (SonarCloud)
-  sonarcloud:
+ sonarcloud:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # Langkah yang perlu ditambahkan/diubah
       - name: Set up PHP for coverage
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          coverage: xdebug # Ini akan meng-install dan mengkonfigurasi Xdebug secara otomatis
+          coverage: xdebug
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
+      
+      # LANGKAH DIAGNOSTIK BARU
+      - name: Debug phpunit.xml
+        run: cat phpunit.xml
       
       - name: Grant execute permission to phpunit
         run: chmod +x ./vendor/bin/phpunit
