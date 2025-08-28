@@ -10,7 +10,7 @@ jobs:
   # Tahap style-check telah dihapus
 
   # 1. Static Analysis (SonarCloud)
- sonarcloud:
+sonarcloud:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
