@@ -7,10 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # Tahap style-check telah dihapus
-
-  # 1. Static Analysis (SonarCloud)
-sonarcloud:
+  sonarcloud:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,7 +23,6 @@ sonarcloud:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
       
-      # LANGKAH DIAGNOSTIK BARU
       - name: Debug phpunit.xml
         run: cat phpunit.xml
       
@@ -38,11 +34,14 @@ sonarcloud:
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
+        with: # <-- Token harus berada di dalam 'with:'
+          args: >
+            -Dsonar.organization=aqilalfa
+            -Dsonar.projectKey=aqilalfa_scxlab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  # 2. Deployment (jika semua lolos)
   deploy:
     needs: sonarcloud
     runs-on: ubuntu-latest
