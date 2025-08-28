@@ -11,21 +11,25 @@ jobs:
 
   # 1. Static Analysis (SonarCloud)
   sonarcloud:
-    # "needs: style-check" dihapus, job ini berjalan pertama
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      # Langkah yang perlu ditambahkan/diubah
+      - name: Set up PHP for coverage
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: xdebug # Ini akan meng-install dan mengkonfigurasi Xdebug secara otomatis
+
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
       
-      # Langkah baru: Berikan izin eksekusi ke PHPUnit
       - name: Grant execute permission to phpunit
         run: chmod +x ./vendor/bin/phpunit
       
-      # Menjalankan tes dan membuat laporan coverage
       - name: Run tests and generate coverage report
         run: ./vendor/bin/phpunit --coverage-clover clover.xml
 
