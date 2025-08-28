@@ -8,10 +8,14 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
-    <coverage>
+    <coverage processUncoveredFiles="true">
         <include>
-            <directory suffix=".php">app/src</directory>
+            <directory suffix=".php">app</directory>
         </include>
+        <exclude>
+            <directory>tests</directory>
+            <directory>vendor</directory>
+        </exclude>
         <report>
             <clover outputFile="clover.xml"/>
         </report>
