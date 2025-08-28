@@ -1,0 +1,35 @@
+name: CI/CD Pipeline PHP
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # Tahap style-check telah dihapus
+
+  # 1. Static Analysis (SonarCloud)
+  sonarcloud:
+    # Baris "needs: style-check" dihapus agar job ini berjalan pertama
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # SonarCloud butuh full history untuk analisis
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # 2. Deployment (jika semua lolos)
+  deploy:
+    needs: sonarcloud # Job ini sekarang bergantung pada sonarcloud
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy via Docker Compose
+        run: docker-compose up -d --build
