@@ -1,19 +1,13 @@
 <?php
-include 'auth.php';
 
-class Profile {
-    public $username;
-    public $isAdmin = false;
+// Muat autoloader Composer
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/auth.php'; // Untuk koneksi DB dan session_start()
 
-    function __construct($u, $isAdmin = false) {
-        $this->username = $u;
-        $this->isAdmin = $isAdmin;
-    }
+// Impor class Profile dari namespace App
+use App\Profile;
 
-    function __toString() {
-        return "User: {$this->username}, Role: " . ($this->isAdmin ? "Admin" : "User");
-    }
-}
+$error = "";
 
 if ($_POST) {
     $u = $_POST['username'];
@@ -34,13 +28,20 @@ if ($_POST) {
         $error = "Login failed.";
     }
 }
+
+require_once __DIR__ . '/_header.php';
 ?>
-<?php include '_header.php'; ?>
+
 <h2>Login</h2>
-<?php if (!empty($error)) echo "<p style='color:red'>$error</p>"; ?>
+
+<?php if (!empty($error)) : ?>
+    <p style='color:red'><?= htmlspecialchars($error) ?></p>
+<?php endif; ?>
+
 <form method="post">
   <label>Username <input name="username"></label>
   <label>Password <input type="password" name="password"></label>
   <button type="submit">Login</button>
 </form>
-<?php include '_footer.php'; ?>
+
+<?php require_once __DIR__ . '/_footer.php'; ?>
