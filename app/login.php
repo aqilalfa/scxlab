@@ -1,47 +1,74 @@
 <?php
 
-// Muat autoloader Composer
+// 1. Setup & Autoloading
+// Memuat semua class (seperti Profile) dan dependensi lain secara otomatis.
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/auth.php'; // Untuk koneksi DB dan session_start()
+// Memuat koneksi database dan memulai sesi.
+require_once __DIR__ . '/auth.php';
 
-// Impor class Profile dari namespace App
+// Mengimpor class Profile agar bisa digunakan.
 use App\Profile;
 
+// Inisialisasi variabel untuk pesan error.
 $error = "";
 
-if ($_POST) {
-    $u = $_POST['username'];
-    $p = $_POST['password'];
+// 2. Logika Pemrosesan Form
+// Hanya jalankan logika jika metode request adalah POST.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-    $sql = "SELECT * FROM users WHERE username='$u' AND password='$p'";
-    $res = $GLOBALS['PDO']->query($sql);
-    if ($row = $res->fetch()) {
-        $_SESSION['user'] = $row['username'];
-        $_SESSION['role'] = $row['role'];
-
-        $pObj = new Profile($row['username'], $row['role'] === 'admin');
-        setcookie('profile', serialize($pObj));
-
-        header("Location: dashboard.php");
-        exit;
+    // Validasi input dasar.
+    if (empty($username) || empty($password)) {
+        $error = "Username dan password tidak boleh kosong.";
     } else {
-        $error = "Login failed.";
+        // Mencegah SQL Injection dengan Prepared Statements.
+        $stmt = $GLOBALS['PDO']->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+
+        // Memverifikasi password hash, bukan plain text.
+        if ($user && password_verify($password, $user['password'])) {
+            // Jika berhasil, simpan informasi ke session.
+            $_SESSION['user'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
+
+            // Redirect ke halaman dashboard.
+            header("Location: dashboard.php");
+            exit(); // Hentikan eksekusi skrip setelah redirect.
+        } else {
+            // Jika gagal, berikan pesan error yang umum.
+            $error = "Login gagal. Periksa kembali username dan password Anda.";
+        }
     }
 }
 
+// 3. Tampilan HTML
+// Memuat file header.
 require_once __DIR__ . '/_header.php';
 ?>
 
-<h2>Login</h2>
+<article>
+    <header>
+        <h2>Login</h2>
+    </header>
 
-<?php if (!empty($error)) : ?>
-    <p style='color:red'><?= htmlspecialchars($error) ?></p>
-<?php endif; ?>
+    <?php if (!empty($error)) : ?>
+        <p style="color: var(--pico-color-red-500);"><?= htmlspecialchars($error) ?></p>
+    <?php endif; ?>
 
-<form method="post">
-  <label>Username <input name="username"></label>
-  <label>Password <input type="password" name="password"></label>
-  <button type="submit">Login</button>
-</form>
+    <form method="post" action="login.php">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
 
-<?php require_once __DIR__ . '/_footer.php'; ?>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Login</button>
+    </form>
+</article>
+
+<?php
+// Memuat file footer.
+require_once __DIR__ . '/_footer.php';
+?>

@@ -11,12 +11,19 @@ jobs:
 
   # 1. Static Analysis (SonarCloud)
   sonarcloud:
-    # Baris "needs: style-check" dihapus agar job ini berjalan pertama
+    # "needs: style-check" dihapus, job ini berjalan pertama
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # SonarCloud butuh full history untuk analisis
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+      
+      # Menjalankan tes dan membuat laporan coverage
+      - name: Run tests and generate coverage report
+        run: ./vendor/bin/phpunit --coverage-clover clover.xml
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
@@ -31,11 +38,11 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
-
+      
       - name: Install Docker Compose
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
-
+          
       - name: Deploy via Docker Compose
         run: docker-compose up -d --build
